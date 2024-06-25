@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randomize Pokémon Colors</title>
+</head>
+<body>
+    <input type="file" id="upload" accept="image/*" multiple><br/><br/>
+    <button id="clear">Clear Images</button>
+    <div id="images"></div>
+    <br>
+    <button id="download">Download Modified Images</button>
+    <script>
+        document.getElementById('upload').addEventListener('change', handleImageUpload);
+        document.getElementById('clear').addEventListener('click', clearImages);
+
+        function handleImageUpload(event) {
+            const files = event.target.files;
+            const imagesDiv = document.getElementById('images');
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        canvas.classList.add('canvas');
+                        imagesDiv.appendChild(canvas);
+                        randomizeColors(img, canvas);
+                        saveImageToLocalStorage(e.target.result);
+                    }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255;
+            g /= 255;
+            b /= 255;
+            const max = Math.max(r, g, b);
+            const min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0; // achromatic
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+
+            return [h, s, l];
+        }
+
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+
+            if (s === 0) {
+                r = g = b = l; // achromatic
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1 / 6) return p + (q - p) * 6 * t;
+                    if (t < 1 / 2) return q;
+                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                    return p;
+                }
+
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1 / 3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1 / 3);
+            }
+
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        function generateHarmoniousColor(hsl, shift) {
+            let [h, s, l] = hsl;
+            h = (h + shift) % 1;
+            return [h, s, l];
+        }
+
+        function randomizeColors(img, canvas) {
+            const ctx = canvas.getContext('2d');
+
+            // Augmenter la taille de l'image par un facteur de 2
+            const scaleFactor = 1;
+            const width = img.width * scaleFactor;
+            const height = img.height * scaleFactor;
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Dessiner l'image redimensionnée
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+
+            const colorMap = {};
+            const hueShift = Math.random(); // Shift for harmonious color generation
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const a = data[i + 3];
+
+                if (a !== 0) {
+                    const originalColor = `${r},${g},${b}`;
+
+                    if (!colorMap[originalColor]) {
+                        const hsl = rgbToHsl(r, g, b);
+                        const newHsl = generateHarmoniousColor(hsl, hueShift);
+                        const newColor = hslToRgb(...newHsl);
+                        colorMap[originalColor] = newColor;
+                    }
+
+                    const newColor = colorMap[originalColor];
+                    data[i] = newColor[0];
+                    data[i + 1] = newColor[1];
+                    data[i + 2] = newColor[2];
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function saveImageToLocalStorage(imageDataUrl) {
+            const images = JSON.parse(localStorage.getItem('savedImages')) || [];
+            images.push(imageDataUrl);
+            localStorage.setItem('savedImages', JSON.stringify(images));
+        }
+
+        function loadImageFromLocalStorage() {
+            const images = JSON.parse(localStorage.getItem('savedImages')) || [];
+            const imagesDiv = document.getElementById('images');
+
+            images.forEach(function(imageDataUrl) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.classList.add('canvas');
+                    imagesDiv.appendChild(canvas);
+                    randomizeColors(img, canvas);
+                }
+                img.src = imageDataUrl;
+            });
+        }
+
+        function clearImages() {
+            localStorage.removeItem('savedImages');
+            document.getElementById('images').innerHTML = '';
+        }
+
+        document.getElementById('download').addEventListener('click', function() {
+            const canvases = document.querySelectorAll('.canvas');
+            canvases.forEach(function(canvas, index) {
+                const link = document.createElement('a');
+                link.download = 'modified_image_' + index + '.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        });
+
+        window.onload = function() {
+            loadImageFromLocalStorage();
+        }
+    </script>
+</body>
+</html>
