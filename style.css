@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DM+Sans:wght@400;500&display=swap');
+
+/* ── Variables ─────────────────────────────────────── */
+:root {
+  --bg:        #1a1a2e;
+  --surface:   #16213e;
+  --card:      #0f3460;
+  --accent:    #e94560;
+  --accent2:   #f5a623;
+  --text:      #eaeaea;
+  --muted:     #8892b0;
+  --radius:    8px;
+  --gap:       1.5rem;
+}
+
+/* ── Reset & base ───────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1.5rem 4rem;
+  gap: var(--gap);
+
+  /* subtle pixel-grid background */
+  background-image:
+    linear-gradient(rgba(233, 69, 96, .04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(233, 69, 96, .04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+header {
+  text-align: center;
+}
+
+header h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(.75rem, 2vw, 1.1rem);
+  color: var(--accent2);
+  text-shadow: 3px 3px 0 rgba(0,0,0,.5);
+  line-height: 1.6;
+  letter-spacing: .03em;
+}
+
+header p {
+  margin-top: .75rem;
+  font-size: .85rem;
+  color: var(--muted);
+}
+
+/* ── Controls card ──────────────────────────────────── */
+.controls {
+  background: var(--surface);
+  border: 2px solid var(--card);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 640px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+
+/* ── File input ─────────────────────────────────────── */
+#upload {
+  display: none;
+}
+
+label[for="upload"] {
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  padding: .55rem 1.25rem;
+  border-radius: var(--radius);
+  font-size: .82rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  transition: filter .2s, transform .15s;
+  white-space: nowrap;
+}
+label[for="upload"]:hover  { filter: brightness(1.15); transform: translateY(-1px); }
+label[for="upload"]:active { transform: translateY(0); }
+
+/* ── Buttons ─────────────────────────────────────────── */
+button {
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  padding: .55rem 1.25rem;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  transition: filter .2s, transform .15s, background .2s;
+}
+button:hover  { filter: brightness(1.15); transform: translateY(-1px); }
+button:active { transform: translateY(0); }
+
+#clear {
+  background: transparent;
+  border-color: var(--muted);
+  color: var(--muted);
+}
+#clear:hover { border-color: var(--text); color: var(--text); }
+
+#download {
+  background: var(--accent2);
+  color: #1a1a2e;
+}
+
+/* ── Image grid ─────────────────────────────────────── */
+#images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  justify-content: center;
+  width: 100%;
+  max-width: 900px;
+}
+
+#images canvas {
+  border-radius: var(--radius);
+  border: 2px solid var(--card);
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+  image-rendering: auto;   /* garde le style pixel-art net */
+  transition: transform .25s, box-shadow .25s;
+  background: #111;
+  max-width: 500px;
+  max-height: 500px;
+  width: auto;
+  height: auto;
+}
+#images canvas:hover {
+  transform: scale(1.06) rotate(-1deg);
+  box-shadow: 0 8px 32px rgba(233, 69, 96, .35);
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 480px) {
+  .controls { padding: 1rem; }
+  #images canvas { max-width: 140px; max-height: 140px; }
+}

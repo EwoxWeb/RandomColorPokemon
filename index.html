@@ -1,16 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Randomize Pokémon Colors</title>
 </head>
+
 <body>
-    <input type="file" id="upload" accept="image/*" multiple><br/><br/>
-    <button id="clear">Clear Images</button>
+    <header>
+        <h1>🎨 Pokémon<br>Color Randomizer</h1>
+        <p>Upload a sprite — each reload gives it a new palette!</p>
+    </header>
+
+    <div class="controls">
+        <label for="upload">📂 Upload Sprites</label>
+        <input type="file" id="upload" accept="image/*" multiple>
+        <button id="clear">🗑 Clear</button>
+        <button id="download">⬇ Download</button>
+    </div>
+
     <div id="images"></div>
     <br>
-    <button id="download">Download Modified Images</button>
     <script>
         document.getElementById('upload').addEventListener('change', handleImageUpload);
         document.getElementById('clear').addEventListener('click', clearImages);
@@ -18,13 +30,13 @@
         function handleImageUpload(event) {
             const files = event.target.files;
             const imagesDiv = document.getElementById('images');
-            
+
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     const img = new Image();
-                    img.onload = function() {
+                    img.onload = function () {
                         const canvas = document.createElement('canvas');
                         canvas.classList.add('canvas');
                         imagesDiv.appendChild(canvas);
@@ -148,9 +160,9 @@
             const images = JSON.parse(localStorage.getItem('savedImages')) || [];
             const imagesDiv = document.getElementById('images');
 
-            images.forEach(function(imageDataUrl) {
+            images.forEach(function (imageDataUrl) {
                 const img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     const canvas = document.createElement('canvas');
                     canvas.classList.add('canvas');
                     imagesDiv.appendChild(canvas);
@@ -165,9 +177,9 @@
             document.getElementById('images').innerHTML = '';
         }
 
-        document.getElementById('download').addEventListener('click', function() {
+        document.getElementById('download').addEventListener('click', function () {
             const canvases = document.querySelectorAll('.canvas');
-            canvases.forEach(function(canvas, index) {
+            canvases.forEach(function (canvas, index) {
                 const link = document.createElement('a');
                 link.download = 'modified_image_' + index + '.png';
                 link.href = canvas.toDataURL();
@@ -175,9 +187,10 @@
             });
         });
 
-        window.onload = function() {
+        window.onload = function () {
             loadImageFromLocalStorage();
         }
     </script>
 </body>
+
 </html>
